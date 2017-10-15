@@ -1,5 +1,5 @@
 require './app'
-require_relative 'bot'
+require './bot'
 require 'facebook/messenger'
 
 # run both Sinatra and facebook-messenger on /webhook

@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 2
+  
+development:
+  <<: *default
+  database: unit_bot_development
+
+production:
+  <<: *default
+  database: unit_bot_production
