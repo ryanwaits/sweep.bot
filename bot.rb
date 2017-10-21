@@ -31,7 +31,7 @@ MAIN_MENU = [
 # end
 
 def say(recipient_id, greeting, quick_replies)
-  get_or_create_user(recipient_id)
+  # get_or_create_user(recipient_id)
 
   if @user
     message_options = {
