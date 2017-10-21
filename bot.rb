@@ -25,10 +25,10 @@ MAIN_MENU = [
 @games ||= 1
 @selected_games ||= []
 
-def get_or_create_user(uuid)
-  @user = User.find_by_facebook_uuid(uuid) || nil
-  @user = User.create(facebook_uuid: uuid, username: "testuser") unless @user
-end
+# def get_or_create_user(uuid)
+#   @user = User.find_by_facebook_uuid(uuid) || nil
+#   @user = User.create(facebook_uuid: uuid, username: "testuser") unless @user
+# end
 
 def say(recipient_id, greeting, quick_replies)
   get_or_create_user(recipient_id)
