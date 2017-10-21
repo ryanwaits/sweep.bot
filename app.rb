@@ -9,7 +9,7 @@ configure :development do
 end
 
 configure :production do
-  set :database, {adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_production', pool: 5}
+  set :url, ENV['HEROKU_POSTGRESQL_TEAL_URL']
 end
 
 ActiveRecord::Base.establish_connection(adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_development', pool: 5)
