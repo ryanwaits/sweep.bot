@@ -9,4 +9,4 @@ development:
 
 production:
   <<: *default
-  database: unit_bot_production
+  url: <%= ENV['DATABASE_URL'] %>
