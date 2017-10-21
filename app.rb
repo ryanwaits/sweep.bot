@@ -5,7 +5,7 @@ Dir["./models/*.rb"].each {|file| require file }
 
 # Database Config
 
-ActiveRecord::Base.establish_connection(adapter: 'postgresql',  encoding: 'unicode', url: ENV['HEROKU_POSTGRESQL_TEAL_URL'], pool: 5)
+# ActiveRecord::Base.establish_connection(adapter: 'postgresql',  encoding: 'unicode', url: ENV['HEROKU_POSTGRESQL_TEAL_URL'], pool: 5)
 
 # Talk to Facebook
 get '/webhook' do
