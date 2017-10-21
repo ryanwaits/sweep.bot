@@ -11,12 +11,8 @@ class AttachmentMessage
         attachment: {
           type: 'template',
           payload: {
-            template_type: 'list',
-            top_element_style: 'compact',
-            elements: @content,
-            buttons: [
-              { title: "View More", type: 'postback', payload: 'view_more' }
-            ]
+            template_type: 'generic',
+            elements: @content
           }
         }
       }
