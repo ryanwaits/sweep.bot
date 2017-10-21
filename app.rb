@@ -4,15 +4,15 @@ require 'active_record'
 Dir["./models/*.rb"].each {|file| require file }
 
 # Database Config
-configure :development do
-  set :database, {adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_development', pool: 5}
-end
+# configure :development do
+#   set :database, {adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_development', pool: 5}
+# end
 
-configure :production do
-  set :database, {adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_production', pool: 5}
-end
+# configure :production do
+#   set :database, {adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_production', pool: 5}
+# end
 
-ActiveRecord::Base.establish_connection(adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_development', pool: 5)
+# ActiveRecord::Base.establish_connection(adapter: 'postgresql',  encoding: 'unicode', database: 'unit_bot_development', pool: 5)
 
 # Talk to Facebook
 get '/webhook' do
