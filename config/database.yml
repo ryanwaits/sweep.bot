@@ -9,4 +9,4 @@ development:
 
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['HEROKU_POSTGRESQL_TEAL_URL'] %>
