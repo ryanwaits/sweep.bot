@@ -7,6 +7,6 @@ development:
   <<: *default
   database: unit_bot_development
 
-production:
-  <<: *default
-  url: <%= ENV['HEROKU_POSTGRESQL_TEAL_URL'] %>
+# production:
+#   <<: *default
+#   url: <%= ENV['HEROKU_POSTGRESQL_TEAL_URL'] %>
