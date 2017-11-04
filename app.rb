@@ -15,7 +15,7 @@ ActiveRecord::Base.establish_connection(
 )
 
 # Talk to Facebook
-get '/webhook' do
+get '/api/v1/sweep/webhook' do
   params['hub.challenge'] if ENV["VERIFY_TOKEN"] == params['hub.verify_token']
 end
 

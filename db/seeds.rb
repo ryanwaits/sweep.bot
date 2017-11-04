@@ -1,0 +1,1 @@
+User.find_or_create_by(username: "posterchild", first_name: "Ryan", last_name: "Waits", picks: {week_1: [{team: "Redskins", spread: "7", outcome: "W"}, {team: "Cowboys", spread: "-4.5", outcome: "L"}, {team: "Patriots", spread: "-10", outcome: "L"}, {team: "Cardinals", spread: "+3", outcome: "W"}]})
