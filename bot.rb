@@ -48,17 +48,17 @@ Facebook::Messenger::Profile.set({
 MAIN_MENU = [
   {
     content_type: 'text',
-    title: 'Make My Picks 🎉',
+    title: 'Make Picks 🎉',
     payload: 'MAKE_PICKS'
   },
   {
     content_type: 'text',
-    title: 'See My Picks 👀',
+    title: 'See Picks 👀',
     payload: 'SEE_PICKS'
   },
   {
     content_type: 'text',
-    title: 'Check Current Streak 📈',
+    title: 'Current Streak 📈',
     payload: 'CURRENT_STREAK'
   },
 ]
@@ -109,7 +109,7 @@ def wait_for_user
   end
 
   Bot.on :message do |message|
-    if message.text == 'Make My Picks 🎉'
+    if message.text == 'Make Picks 🎉'
       # message.typing_on
       sleep 1
       message.reply(
@@ -137,7 +137,7 @@ def wait_for_user
       )
     end
 
-    if message.text == 'See My Picks 👀'
+    if message.text == 'See Picks 👀'
       # message.typing_on
       sleep 1
       message.reply(
@@ -198,6 +198,36 @@ def wait_for_user
       )
     end
 
+    if message.text == 'Current Streak 📈'
+      sleep 1
+      message.reply(
+              "attachment":{
+                "type":"template",
+                "payload":{
+                  "template_type":"generic",
+                  "elements":[
+                     {
+                      "title":"Current streak of 2!",
+                      "image_url":"https://petersfancybrownhats.com/company_image.png",
+                      "subtitle":"We\'ve got the right hat for everyone.",
+                      "buttons":[
+                        {
+                          "type":"postback",
+                          "title":"Check Your Friends Streak",
+                          "payload":"DEVELOPER_DEFINED_PAYLOAD"
+                        },
+                        {
+                          "type":"postback",
+                          "title":"Change Pick",
+                          "payload":"DEVELOPER_DEFINED_PAYLOAD"
+                        }              
+                      ]      
+                    }
+                  ]
+                }
+              }
+            )
+    end
 
   end
 end
