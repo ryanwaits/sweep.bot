@@ -48,21 +48,26 @@ Facebook::Messenger::Profile.set({
 MAIN_MENU = [
   {
     content_type: 'text',
-    title: 'Make Picks 🎉',
-    payload: 'SELECT_GAMES'
+    title: 'Make My Picks 🎉',
+    payload: 'MAKE_PICKS'
   },
   {
     content_type: 'text',
-    title: 'Current Streak 📈',
+    title: 'See My Picks 👀',
+    payload: 'SEE_PICKS'
+  },
+  {
+    content_type: 'text',
+    title: 'Check Current Streak 📈',
     payload: 'CURRENT_STREAK'
   },
 ]
 
-def say(recipient_id, quick_replies)  
+def say(recipient_id, quick_replies, message)  
   message_options = {
     recipient: { id: recipient_id },
     message: { 
-      text: "A simple, quick, and fun way to win Amazon Gift Cards while you watch the NFL every week."
+      text: message
     }
   }
 
@@ -74,57 +79,126 @@ def say(recipient_id, quick_replies)
 end
 
 def start
-  Bot.on :optin do |optin|
-    optin.reply(text: 'Ah, human!')
-    puts optin.inspect
-  end
 
-  Bot.on :delivery do |deliver|
-    puts "Deliver..."
-    puts deliver.inspect
-  end
+  # Bot.on :optin do |optin|
+  #   optin.reply(text: 'Ah, human!')
+  #   puts optin.inspect
+  # end
 
-  Bot.on :read do |read|
-    puts "Read..."
-    puts read.inspect
-  end
+  # Bot.on :delivery do |deliver|
+  #   puts "Deliver..."
+  #   puts deliver.inspect
+  # end
 
-  say('1328837993906209', MAIN_MENU)
+  # Bot.on :read do |read|
+  #   puts "Read..."
+  #   puts read.inspect
+  # end
+
+  message = 'A simple, quick, and fun way to win Amazon Gift Cards while you watch the NFL every week.'
+  say('1328837993906209', MAIN_MENU, message)
 end
 
 def wait_for_user
-  Bot.on :message do |message|
-    if message.text == 'Make Picks 🎉'
-      message.typing_on
+  Bot.on :postback do |postback|
+    if postback.payload == 'MAIN_MENU_PAYLOAD'
       sleep 1
-      message.reply(
-        text: "Here's the current slate for Week 9...\n"
-      )
+      message = "Select from the options below to get started or check on any updates"
+      say('1328837993906209', MAIN_MENU, message)
+    end
+  end
+
+  Bot.on :message do |message|
+    if message.text == 'Make My Picks 🎉'
+      # message.typing_on
       sleep 1
       message.reply(
         attachment: {
           type: 'template',
           payload: {
             template_type: 'button',
-            text: "- Bills @ Jets\n- Broncos @ Eagles\n- Chiefs @ Cowboys\n- Raiders @ Dolphins\n- Lions @ Packers",
+            text: "Awesome, lets get started!",
             buttons: [
               {
                 type: 'web_url',
-                title: 'Get Started 🏈',
-                url: 'https://github.com/hyperoslo/facebook-messenger',
+                messenger_extensions: true,
+                title: 'Make Picks 🏈',
+                url: 'https://4e5b0417.ngrok.io',
                 webview_height_ratio: 'full'
               },
               {
-                type: 'web_url',
-                title: 'More Details 🙋',
-                url: 'https://github.com/hyperoslo/facebook-messenger',
-                webview_height_ratio: 'full'
+                type: 'postback',
+                title: 'Main Menu 🏠',
+                payload: 'MAIN_MENU_PAYLOAD'
               }
             ]
           }
         }
       )
     end
+
+    if message.text == 'See My Picks 👀'
+      # message.typing_on
+      sleep 1
+      message.reply(
+        "attachment":{
+              "type":"template",
+              "payload":{
+                "template_type":"generic",
+                "elements":[
+                   {
+                    "title":"Cardinals",
+                    "image_url":"https://petersfancybrownhats.com/company_image.png",
+                    "subtitle":"We\'ve got the right hat for everyone.",
+                    "default_action": {
+                      "type": "web_url",
+                      "url": "https://github.com/",
+                      "messenger_extensions": true,
+                      "webview_height_ratio": "tall",
+                      "fallback_url": ""
+                    },
+                    "buttons":[
+                      {
+                        "type":"web_url",
+                        "url":"https://github.com/",
+                        "title":"More Details"
+                      },{
+                        "type":"postback",
+                        "title":"Change Pick",
+                        "payload":"DEVELOPER_DEFINED_PAYLOAD"
+                      }              
+                    ]      
+                  },
+                   {
+                    "title":"Falcons",
+                    "image_url":"https://petersfancybrownhats.com/company_image.png",
+                    "subtitle":"We\'ve got the right hat for everyone.",
+                    "default_action": {
+                      "type": "web_url",
+                      "url": "https://github.com/",
+                      "messenger_extensions": true,
+                      "webview_height_ratio": "tall",
+                      "fallback_url": ""
+                    },
+                    "buttons":[
+                      {
+                        "type":"web_url",
+                        "url":"https://github.com/",
+                        "title":"More Details"
+                      },{
+                        "type":"postback",
+                        "title":"Change Pick",
+                        "payload":"DEVELOPER_DEFINED_PAYLOAD"
+                      }              
+                    ]      
+                  }
+                ]
+              }
+            }
+      )
+    end
+
+
   end
 end
 
