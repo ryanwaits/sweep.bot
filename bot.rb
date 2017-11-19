@@ -39,7 +39,7 @@ Facebook::Messenger::Profile.set({
       ]
     },
     {
-      locale: 'zh_CN',
+      locale: 'en_US',
       composer_input_disabled: false
     }
   ]
