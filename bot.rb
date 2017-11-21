@@ -123,7 +123,7 @@ def wait_for_user
                 type: 'web_url',
                 messenger_extensions: true,
                 title: 'Make Picks 🏈',
-                url: 'https://4e5b0417.ngrok.io',
+                url: 'https://6e23e448.ngrok.io',
                 webview_height_ratio: 'full'
               },
               {
@@ -138,7 +138,9 @@ def wait_for_user
     end
 
     if message.text == 'See Picks 👀'
-      # message.typing_on
+      sweep = SweepApi.new
+      current_picks = sweep.get_current_picks
+      message.typing_on
       sleep 1
       message.reply(
         "attachment":{
@@ -147,8 +149,8 @@ def wait_for_user
                 "template_type":"generic",
                 "elements":[
                    {
-                    "title":"Cardinals",
-                    "image_url":"https://petersfancybrownhats.com/company_image.png",
+                    "title":"#{current_picks[0]['team']}",
+                    "image_url":"#{current_picks[0]['team_url']}",
                     "subtitle":"We\'ve got the right hat for everyone.",
                     "default_action": {
                       "type": "web_url",
@@ -170,8 +172,8 @@ def wait_for_user
                     ]      
                   },
                    {
-                    "title":"Falcons",
-                    "image_url":"https://petersfancybrownhats.com/company_image.png",
+                    "title":"#{current_picks[1]['team']}",
+                    "image_url":"#{current_picks[1]['team_url']}",
                     "subtitle":"We\'ve got the right hat for everyone.",
                     "default_action": {
                       "type": "web_url",
@@ -199,6 +201,9 @@ def wait_for_user
     end
 
     if message.text == 'Current Streak 📈'
+      sweep = SweepApi.new
+      current_streak = sweep.get_current_streak
+      puts current_streak.inspect
       sleep 1
       message.reply(
               "attachment":{
@@ -207,8 +212,8 @@ def wait_for_user
                   "template_type":"generic",
                   "elements":[
                      {
-                      "title":"Current streak of 2!",
-                      "image_url":"https://petersfancybrownhats.com/company_image.png",
+                      "title":"Current streak of #{current_streak}!",
+                      "image_url":"http://oi67.tinypic.com/oi4oy8.jpg",
                       "subtitle":"We\'ve got the right hat for everyone.",
                       "buttons":[
                         {
