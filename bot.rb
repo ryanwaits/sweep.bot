@@ -1,6 +1,7 @@
 require 'facebook/messenger'
 require './lib/text_message'
 require './lib/attachment_message'
+require './models/sweep_api'
 
 include Facebook::Messenger
 
@@ -37,41 +38,104 @@ Facebook::Messenger::Profile.set({
           webview_height_ratio: 'full'
         }
       ]
-    },
-    {
-      locale: 'en_US',
-      composer_input_disabled: false
     }
   ]
 }, access_token: ENV['ACCESS_TOKEN'])
 
-MAIN_MENU = [
+
+# MAIN_MENU = [
+#   {
+#     content_type: 'text',
+#     title: 'Make Picks 🎉',
+#     payload: 'MAKE_PICKS'
+#   },
+#   {
+#     content_type: 'text',
+#     title: 'See Picks 👀',
+#     payload: 'SEE_PICKS'
+#   },
+#   {
+#     content_type: 'text',
+#     title: 'Current Streak 📈',
+#     payload: 'CURRENT_STREAK'
+#   }
+# ]
+
+STARTER_MENU = [
   {
-    content_type: 'text',
-    title: 'Make Picks 🎉',
-    payload: 'MAKE_PICKS'
+    title: "See Picks 👀",
+    image_url: "https://png.icons8.com/?id=13119&size=500",
+    subtitle: "Ego is about who's right. Truth is about what's right.",
+    default_action: {
+      type: "web_url",
+      url: "https://github.com/",
+      messenger_extensions: true,
+      webview_height_ratio: "tall",
+      fallback_url: ""
+    },
+    buttons: [
+      {
+        type: 'postback',
+        title: 'See Picks 👀',
+        payload: 'SEE_PICKS'
+      }
+    ]   
+  },
+   {
+    title: "Make Picks 🎉",
+    image_url: "https://png.icons8.com/?id=13037&size=500",
+    subtitle: "Ego is about who's right. Truth is about what's right.",
+    default_action: {
+      type: "web_url",
+      url: "https://0738e13a.ngrok.io",
+      messenger_extensions: true,
+      webview_height_ratio: "tall"
+    },
+    buttons: [
+      {
+        type: 'web_url',
+        messenger_extensions: true,
+        title: 'Make Picks 🏈',
+        url: 'https://0738e13a.ngrok.io',
+        webview_height_ratio: 'tall'
+      }
+    ]   
   },
   {
-    content_type: 'text',
-    title: 'See Picks 👀',
-    payload: 'SEE_PICKS'
-  },
-  {
-    content_type: 'text',
-    title: 'Current Streak 📈',
-    payload: 'CURRENT_STREAK'
-  },
+    title: "Status Check 📈",
+    image_url: "https://png.icons8.com/?id=42890&size=500",
+    subtitle: "Ego is about who's right. Truth is about what's right.",
+    default_action: {
+      type: "web_url",
+      url: "https://github.com/",
+      messenger_extensions: true,
+      webview_height_ratio: "tall"
+    },
+    buttons: [
+      {
+        type: 'postback',
+        title: 'Status Check 📈',
+        payload: 'STATUS_CHECK'
+      }
+    ]  
+  }
 ]
 
-def say(recipient_id, quick_replies, message)  
+def say(recipient_id, options)  
   message_options = {
     recipient: { id: recipient_id },
     message: { 
-      text: message
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: options
+        }
+      }
     }
   }
 
-  message_options[:message][:quick_replies] = quick_replies if quick_replies
+  # message_options[:message][:quick_replies] = quick_replies if quick_replies
 
   Bot.deliver(message_options, access_token: ENV['ACCESS_TOKEN'])
 
@@ -79,6 +143,14 @@ def say(recipient_id, quick_replies, message)
 end
 
 def start
+  @recipient_id = '1328837993906209'
+
+  # Bot.on :referral do |referral|
+  #   referral.sender    # => { 'id' => '1008372609250235' }
+  #   referral.recipient # => { 'id' => '2015573629214912' }
+  #   referral.sent_at   # => 2016-04-22 21:30:36 +0200
+  #   referral.ref       # => 'MYPARAM'
+  # end
 
   # Bot.on :optin do |optin|
   #   optin.reply(text: 'Ah, human!')
@@ -95,143 +167,63 @@ def start
   #   puts read.inspect
   # end
 
-  message = 'A simple, quick, and fun way to win Amazon Gift Cards while you watch the NFL every week.'
-  say('1328837993906209', MAIN_MENU, message)
+  say(@recipient_id, STARTER_MENU)
+end
+
+def set_matchup_payloads(current_picks)
+  api = SweepApi.new
+  payloads = current_picks.each do |current_pick|
+    api.set_matchup_details(current_pick['matchup_id'])
+  end
+  payloads
 end
 
 def wait_for_user
-  Bot.on :postback do |postback|
-    if postback.payload == 'MAIN_MENU_PAYLOAD'
-      sleep 1
-      message = "Select from the options below to get started or check on any updates"
-      say('1328837993906209', MAIN_MENU, message)
-    end
-  end
 
-  Bot.on :message do |message|
-    if message.text == 'Make Picks 🎉'
-      # message.typing_on
-      sleep 1
-      message.reply(
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'button',
-            text: "Awesome, lets get started!",
+  Bot.on :postback do |postback|
+    puts "sender id => #{postback.sender}"
+    puts "recipient id => #{postback.recipient}"
+    puts "sent at => #{postback.sent_at}"
+    puts "payload => #{postback.payload}"
+    @payloads = []
+
+    if postback.payload == 'SEE_PICKS'
+      current_picks = SweepApi.new.get_current_picks
+      picks_menu = []
+      current_picks.each do |current_pick|
+        picks_menu.push(
+          {
+            title: current_pick['team'],
+            image_url: current_pick['team_url'],
             buttons: [
               {
-                type: 'web_url',
-                messenger_extensions: true,
-                title: 'Make Picks 🏈',
-                url: 'https://6e23e448.ngrok.io',
-                webview_height_ratio: 'full'
+                type: 'postback',
+                title: 'More Details',
+                payload: "MATCHUP_#{current_pick['matchup_id']}_PAYLOAD"
               },
               {
                 type: 'postback',
-                title: 'Main Menu 🏠',
-                payload: 'MAIN_MENU_PAYLOAD'
+                title: 'Back',
+                payload: "BACK_PAYLOAD"
               }
             ]
           }
+        )
+      end
+      say(@recipient_id, picks_menu)
+    end
+
+    if postback.payload == 'STATUS_CHECK'
+      status = SweepApi.new.get_status
+      message_options = {
+        recipient: { id: @recipient_id },
+        message: { 
+          text: "You have a current streak of #{status[:current_streak]}"
         }
-      )
-    end
+      }
 
-    if message.text == 'See Picks 👀'
-      sweep = SweepApi.new
-      current_picks = sweep.get_current_picks
-      message.typing_on
-      sleep 1
-      message.reply(
-        "attachment":{
-              "type":"template",
-              "payload":{
-                "template_type":"generic",
-                "elements":[
-                   {
-                    "title":"#{current_picks[0]['team']}",
-                    "image_url":"#{current_picks[0]['team_url']}",
-                    "subtitle":"We\'ve got the right hat for everyone.",
-                    "default_action": {
-                      "type": "web_url",
-                      "url": "https://github.com/",
-                      "messenger_extensions": true,
-                      "webview_height_ratio": "tall",
-                      "fallback_url": ""
-                    },
-                    "buttons":[
-                      {
-                        "type":"web_url",
-                        "url":"https://github.com/",
-                        "title":"More Details"
-                      },{
-                        "type":"postback",
-                        "title":"Change Pick",
-                        "payload":"DEVELOPER_DEFINED_PAYLOAD"
-                      }              
-                    ]      
-                  },
-                   {
-                    "title":"#{current_picks[1]['team']}",
-                    "image_url":"#{current_picks[1]['team_url']}",
-                    "subtitle":"We\'ve got the right hat for everyone.",
-                    "default_action": {
-                      "type": "web_url",
-                      "url": "https://github.com/",
-                      "messenger_extensions": true,
-                      "webview_height_ratio": "tall",
-                      "fallback_url": ""
-                    },
-                    "buttons":[
-                      {
-                        "type":"web_url",
-                        "url":"https://github.com/",
-                        "title":"More Details"
-                      },{
-                        "type":"postback",
-                        "title":"Change Pick",
-                        "payload":"DEVELOPER_DEFINED_PAYLOAD"
-                      }              
-                    ]      
-                  }
-                ]
-              }
-            }
-      )
-    end
-
-    if message.text == 'Current Streak 📈'
-      sweep = SweepApi.new
-      current_streak = sweep.get_current_streak
-      puts current_streak.inspect
-      sleep 1
-      message.reply(
-              "attachment":{
-                "type":"template",
-                "payload":{
-                  "template_type":"generic",
-                  "elements":[
-                     {
-                      "title":"Current streak of #{current_streak}!",
-                      "image_url":"http://oi67.tinypic.com/oi4oy8.jpg",
-                      "subtitle":"We\'ve got the right hat for everyone.",
-                      "buttons":[
-                        {
-                          "type":"postback",
-                          "title":"Check Your Friends Streak",
-                          "payload":"DEVELOPER_DEFINED_PAYLOAD"
-                        },
-                        {
-                          "type":"postback",
-                          "title":"Change Pick",
-                          "payload":"DEVELOPER_DEFINED_PAYLOAD"
-                        }              
-                      ]      
-                    }
-                  ]
-                }
-              }
-            )
+      Bot.deliver(message_options, access_token: ENV['ACCESS_TOKEN'])
+      wait_for_user
     end
 
   end

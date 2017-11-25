@@ -1,18 +1,31 @@
 require 'rubygems'
 require 'sinatra'
-require 'active_record'
-Dir["./models/*.rb"].each {|file| require file }
+require 'sinatra/cross_origin'
 
-# Database Config
-db = URI.parse(ENV['HEROKU_POSTGRESQL_TEAL_URL'] || "postgres://ddruvjsvaaxbyk:d34dc5d5430747972bdaa15a148ef88e1eeb5379ad751cca9ebb1cfc92709c03@ec2-184-73-189-190.compute-1.amazonaws.com:5432/dfes539af18buu")
-ActiveRecord::Base.establish_connection(
-  :adapter => 'postgresql',
-  :host => db.host,
-  :username => db.user,
-  :password => db.password,
-  :database => db.path[1..-1],
-  :encoding => 'utf8'
-)
+require "net/http"
+require "net/https"
+require "cgi"
+
+require "json"
+
+enable :sessions
+
+configure do
+  enable :cross_origin
+end
+
+set :allow_origin, :any
+set :allow_methods, [:get, :post, :options]
+
+before do
+  response.headers['Content-Type'] = 'application/json'
+  response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080'
+
+  @client_id = "350862282042931"
+  @client_secret = "6aafcd00b782cd9e0f8a59d11aa7df59"
+
+  session[:oauth] ||= {}
+end
 
 # Talk to Facebook
 get '/api/v1/sweep/webhook' do
@@ -20,5 +33,51 @@ get '/api/v1/sweep/webhook' do
 end
 
 get "/" do
-  "Nothing to see here"
+  if session[:oauth][:access_token].nil?
+    puts "Access Token is nil"
+  else
+    
+    fb_api = FacebookService.new(session[:oauth][:access_token])
+    fb_api.get_me(session[:oauth][:access_token])
+
+    session[:user_id] = @json['id']
+    request = Net::HTTP::Get.new "/#{session[:user_id]}/friendlists?access_token=#{session[:oauth][:access_token]}"
+    response = http.request request
+    @json = JSON.parse(response.body)
+    puts @json.inspect
+
+    # request = Net::HTTP::Get.new "/#{session[:user_id]}?fields=picture&access_token=#{session[:oauth][:access_token]}"
+    # response = http.request request
+    # @json = JSON.parse(response.body)
+    # puts "APP"
+    # puts @json.inspect
+
+    # request = Net::HTTP::Get.new "/1328837993906209?fields=first_name,last_name,profile_pic&access_token=#{ENV["ACCESS_TOKEN"]}"
+    # response = http.request request
+    # @json = JSON.parse(response.body)
+    # puts "PAGE"
+    # puts @json.inspect
+  end
 end
+
+get "/request" do
+  redirect "https://graph.facebook.com/oauth/authorize?client_id=#{@client_id}&scope=user_friends,email&redirect_uri=http://localhost:3001/oauth/facebook/callback"
+end
+
+get "/oauth/facebook/callback" do
+  session[:oauth][:code] = params[:code]
+
+  http = Net::HTTP.new "graph.facebook.com", 443
+  request = Net::HTTP::Get.new "/oauth/access_token?client_id=#{@client_id}&redirect_uri=http://localhost:3001/oauth/facebook/callback&client_secret=#{@client_secret}&code=#{session[:oauth][:code]}"
+  http.use_ssl = true
+  response = http.request request
+
+  body = JSON.parse(response.body)
+  session[:oauth][:access_token] = body["access_token"]
+  session[:oauth][:token_type] = body["token_type"]
+  session[:oauth][:expires_in] = body["expires_in"]
+
+  redirect "/"
+end
+
+
