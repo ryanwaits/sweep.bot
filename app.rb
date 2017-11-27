@@ -21,8 +21,8 @@ before do
   response.headers['Content-Type'] = 'application/json'
   response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080'
 
-  @client_id = "350862282042931"
-  @client_secret = "6aafcd00b782cd9e0f8a59d11aa7df59"
+  @client_id = ENV["APP_ID"]
+  @client_secret = ENV["APP_SERET"]
 
   session[:oauth] ||= {}
 end
@@ -41,7 +41,7 @@ get "/" do
     fb_api.get_me(session[:oauth][:access_token])
 
     session[:user_id] = @json['id']
-    request = Net::HTTP::Get.new "/#{session[:user_id]}/friendlists?access_token=#{session[:oauth][:access_token]}"
+    request = Net::HTTP::Get.new "/#{session[:user_id]}/friends?access_token=#{session[:oauth][:access_token]}"
     response = http.request request
     @json = JSON.parse(response.body)
     puts @json.inspect
@@ -61,7 +61,8 @@ get "/" do
 end
 
 get "/request" do
-  redirect "https://graph.facebook.com/oauth/authorize?client_id=#{@client_id}&scope=user_friends,email&redirect_uri=http://localhost:3001/oauth/facebook/callback"
+  # redirect "https://graph.facebook.com/oauth/authorize?client_id=#{@client_id}&scope=user_friends,email&redirect_uri=http://localhost:3001/oauth/facebook/callback"
+  redirect "https://www.facebook.com/v2.11/dialog/oauth?client_id=#{@client_id}&scope=user_friends,email&redirect_uri=https://www.facebook.com/connect/login_success.html"
 end
 
 get "/oauth/facebook/callback" do

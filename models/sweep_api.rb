@@ -9,6 +9,21 @@ class SweepApi
   #   @options = { query: { site: service, page: page } }
   # end
 
+  # def get_or_create_user(id)
+  #   options = {
+  #     body: {
+  #       user: { 
+  #         first_name: 'Test',
+  #         last_name: 'User',
+  #         facebook_uuid: id
+  #       }
+  #     }
+  #   }
+  #   response = self.class.post('/users', options)
+  #   body = JSON.parse(response.body)
+  #   body['user']
+  # end
+
   def get_current_picks
     response = self.class.get("/users/1/picks")
     body = JSON.parse(response.body)
