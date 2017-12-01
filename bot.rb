@@ -1,8 +1,16 @@
 require 'facebook/messenger'
+require 'sinatra/activerecord'
+
 require './lib/bot_user'
 require './lib/text_message'
 require './lib/attachment_message'
-require './models/sweep_api'
+
+require './models/matchup'
+require './models/matchup_detail'
+require './models/user'
+require './models/pick'
+require './models/team'
+require './models/sport'
 
 include Facebook::Messenger
 
@@ -14,44 +22,38 @@ Facebook::Messenger::Profile.set({
   }
 }, access_token: ENV['ACCESS_TOKEN'])
 
-# Facebook::Messenger::Profile.set({
-#   persistent_menu: [
-#     {
-#       locale: 'default',
-#       composer_input_disabled: false,
-#       call_to_actions: [
-#         {
-#           title: 'My Account',
-#           type: 'nested',
-#           call_to_actions: [
-#             {
-#               title: 'What is a chatbot?',
-#               type: 'postback',
-#               payload: 'EXTERMINATE'
-#             },
-#             {
-#               title: 'History',
-#               type: 'postback',
-#               payload: 'HISTORY_PAYLOAD'
-#             },
-#             {
-#               title: 'Contact Info',
-#               type: 'postback',
-#               payload: 'CONTACT_INFO_PAYLOAD'
-#             }
-#           ]
-#         },
-#         {
-#           type: 'web_url',
-#           title: 'Get some help',
-#           url: 'https://github.com/hyperoslo/facebook-messenger',
-#           webview_height_ratio: 'full'
-#         }
-#       ]
-#     }
-#   ]
-# }, access_token: ENV['ACCESS_TOKEN'])
-
+Facebook::Messenger::Profile.set({
+  persistent_menu: [
+    {
+      locale: 'default',
+      composer_input_disabled: true,
+      call_to_actions: [
+        {
+          type: 'web_url',
+          title: '📊 Leaderboard',
+          url: 'https://github.com/hyperoslo/facebook-messenger',
+          webview_height_ratio: 'tall'
+        },
+        {
+          type: 'web_url',
+          title: '📫 Invite A Friend',
+          url: 'https://github.com/hyperoslo/facebook-messenger',
+          webview_height_ratio: 'tall'
+        },
+        {
+          type: 'web_url',
+          title: '🎮 How To Play',
+          url: 'https://github.com/hyperoslo/facebook-messenger',
+          webview_height_ratio: 'tall'
+        }
+      ]
+    },
+    {
+      locale: 'zh_CN',
+      composer_input_disabled: false
+    }
+  ]
+}, access_token: ENV['ACCESS_TOKEN'])
 
 MAIN_MENU = [
   {
@@ -61,19 +63,20 @@ MAIN_MENU = [
   },
   {
     content_type: 'text',
-    title: '🎉 Make Picks',
+    title: '🏆 Make Picks',
     payload: 'MAKE_PICKS'
   },
   {
     content_type: 'text',
-    title: '📈 Status',
+    title: '🤓 Current Status',
     payload: 'STATUS'
   }
 ]
 
-def say(recipient_id, options, menu=nil)  
+def say(options, menu=nil)  
   message_options = {
-    recipient: { id: recipient_id },
+    messaging_type: "RESPONSE",
+    recipient: { id: @user.facebook_uuid },
     message: { 
       attachment: {
         type: 'template',
@@ -91,11 +94,12 @@ def say(recipient_id, options, menu=nil)
   wait_for_user
 end
 
-def quick_reply(recipient_id, menu)
+def quick_reply(text, menu)
   message_options = {
-    recipient: { id: recipient_id },
+    messaging_type: "RESPONSE",
+    recipient: { id: @user.facebook_uuid },
     message: {
-      text: "Welcome to Sweep 🔥\nLet's get started...", 
+      text: text, 
       quick_replies: menu
     }
   }
@@ -111,106 +115,112 @@ def text_reply recipient_id, message, menu
   TextMessage.new(recipient_id, message, menu).format
 end
 
+def set_matchup_details(picks)
+  @menu = []
+  picks.each do |current_pick|
+    @menu.push(
+      {
+        content_type: "text",
+        title: "#{current_pick.team.name}",
+        payload: "MATCHUP_#{current_pick.matchup_id}_PAYLOAD"
+      }
+    )
+  end
+  @menu
+end
+
 def wait_for_user
 
   Bot.on :postback do |postback|
-    @recipient_id = postback.sender['id']
-    puts "sender id => #{postback.sender}"
-    puts "recipient id => #{postback.recipient}"
-    puts "sent at => #{postback.sent_at}"
-    puts "payload => #{postback.payload}"
+    @user = User.find_or_create_by(facebook_uuid: postback.sender['id'])
 
     if postback.payload == 'GET_STARTED_PAYLOAD'
-      @recipient_id = postback.sender['id']
-      quick_reply(@recipient_id, MAIN_MENU)
-    end
-
-    if postback.payload == 'MATCHUP_1_PAYLOAD'
-      message_options = {
-        recipient: { id: @recipient_id },
-        message: { 
-          text: "Details about the game..."
-        }
-      }
-
-      quick_reply(@recipient_id, MAIN_MENU)
+      text = "Welcome to Sweep 🔥\n\nLet's get started!"
+      quick_reply(text, MAIN_MENU)
     end
 
   end
 
   Bot.on :message do |message|
-    message.typing_off
-    @recipient_id = message.sender['id']
-    if message.text == '👀 My Picks'
+    @user = User.find_or_create_by(facebook_uuid: message.sender['id'])
+    set_matchup_details(@user.current_picks)
 
-      current_picks = SweepApi.new.get_current_picks
-      picks_menu = []
-
-      current_picks.each do |current_pick|
-        picks_menu.push(
-          {
-            title: 'Buffalo Bills', 
-            image_url: 'http://oi68.tinypic.com/bi835x.jpg',
-            buttons: [
-              {
-                type: 'postback',
-                title: 'More Details',
-                payload: "MATCHUP_#{current_pick['matchup_id']}_PAYLOAD"
-              }
-            ]
-          }
-        )
-      end
-
-      say(@recipient_id, picks_menu, MAIN_MENU)
+    if message.text == '↩️  More Options'
+      message.typing_on
+      text = "You have a lot of options to choose from, better get to it ⚡"
+      quick_reply(text, MAIN_MENU)
     end
 
-    if message.text == '🎉 Make Picks'
+
+    if message.text == '👀 My Picks'
+      message.typing_on
+      @menu = @menu.push({content_type: 'text',title: '↩️  More Options',payload: 'MAIN_VIEW'})
+      text = "You've got #{@user.current_picks.count} games coming up! Check out some more details below 👇"
+      quick_reply(text, @menu)
+    end
+
+    if message.quick_reply == 'MATCHUP_1_PAYLOAD'
+      text = @user.current_picks.find_by_matchup_id(1).matchup.matchup_detail.description
+      quick_reply(text, @menu)
+    end
+
+    if message.quick_reply == 'MATCHUP_2_PAYLOAD'
+      text = @user.current_picks.find_by_matchup_id(2).matchup.matchup_detail.description
+      quick_reply(text, @menu)
+    end
+
+    if message.quick_reply == 'MATCHUP_3_PAYLOAD'
+      text = @user.current_picks.find_by_matchup_id(3).matchup.matchup_detail.description
+      quick_reply(text, @menu)
+    end
+
+    if message.quick_reply == 'MATCHUP_4_PAYLOAD'
+      text = @user.current_picks.find_by_matchup_id(4).matchup.matchup_detail.description
+      quick_reply(text, @menu)
+    end
+
+
+    if message.text == '🏆 Make Picks'
+      message.typing_on
       pick_card = [
         {
-          title: 'Make your picks now!',
-          image_url: 'https://png.icons8.com/?id=13037&size=500',
+          title: 'Pick your winners now 🥇',
           buttons: [
             {
               type: 'web_url',
               messenger_extensions: true,
-              title: 'Lets do it',
-              url: 'https://0738e13a.ngrok.io',
+              title: 'Select Here',
+              url: "https://5a8ee13c.ngrok.io?id=#{@user.id}",
               webview_height_ratio: 'tall'
             }
           ]
         }
       ]
-      say(@recipient_id, pick_card, MAIN_MENU)
+      menu = [{content_type: 'text',title: '👀 My Picks',payload: 'SEE_PICKS'}, {content_type: 'text',title: '🤓 Current Status',payload: 'STATUS'}]
+      say(pick_card, menu)
     end
 
-    if message.text == '📈 Status'
-      current_streak_message = text_reply(@recipient_id, "You have a current streak of 1", MAIN_MENU)
-      Bot.deliver(current_streak_message, access_token: ENV['ACCESS_TOKEN'])   
-      wait_for_user
+    if message.text == '🤓 Current Status'
+      status_card = [
+        {
+          content_type: "text",
+          title: "🗒 History",
+          payload: "HISTORY"
+        },
+        {
+          content_type: 'text',
+          title: '👥 Friends Picks',
+          payload: 'LEADERBOARD'
+        },
+        {
+          content_type: 'text',
+          title: '↩️  More Options',
+          payload: 'MAIN_VIEW'
+        }
+      ]
+      text = "Your current streak is #{@user.current_streak}.\n\nYour next matchup is the #{@user.current_picks.first.team.name} against the #{@user.current_picks.first.opponent.name}.\n\nCheck out your history below or take a look at what your friends are picking 👍"
+      quick_reply(text, status_card)
     end
-  end
-
-  Bot.on :referral do |referral|
-    referral.sender    # => { 'id' => '1008372609250235' }
-    referral.recipient # => { 'id' => '2015573629214912' }
-    referral.sent_at   # => 2016-04-22 21:30:36 +0200
-    referral.ref       # => 'MYPARAM'
-  end
-
-  Bot.on :optin do |optin|
-    optin.reply(text: 'Ah, human!')
-    puts optin.inspect
-  end
-
-  Bot.on :delivery do |deliver|
-    puts "Deliver..."
-    puts deliver.inspect
-  end
-
-  Bot.on :read do |read|
-    puts "Read..."
-    puts read.inspect
   end
 
 end

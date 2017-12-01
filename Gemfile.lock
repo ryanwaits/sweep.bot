@@ -1,21 +1,18 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (4.2.5)
-      activesupport (= 4.2.5)
-      builder (~> 3.1)
-    activerecord (4.2.5)
-      activemodel (= 4.2.5)
-      activesupport (= 4.2.5)
-      arel (~> 6.0)
-    activesupport (4.2.5)
+    activemodel (5.1.4)
+      activesupport (= 5.1.4)
+    activerecord (5.1.4)
+      activemodel (= 5.1.4)
+      activesupport (= 5.1.4)
+      arel (~> 8.0)
+    activesupport (5.1.4)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (~> 0.7)
-      json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
-      thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    arel (6.0.4)
-    builder (3.2.3)
+    arel (8.0.0)
     concurrent-ruby (1.0.5)
     facebook-messenger (1.0.0)
       httparty (~> 0.13, >= 0.13.7)
@@ -24,15 +21,20 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.9.1)
       concurrent-ruby (~> 1.0)
-    json (1.8.6)
+    jsonb_accessor (1.0.0)
+      activerecord (>= 5.0)
+      activesupport (>= 5.0)
+      pg (>= 0.18.1)
     minitest (5.10.3)
     multi_xml (0.6.0)
     mustermann (1.0.1)
-    puma (3.10.0)
+    pg (0.21.0)
+    puma (3.11.0)
     rack (2.0.3)
     rack-protection (2.0.0)
       rack
-    rake (12.0.0)
+    rake (12.3.0)
+    require_all (1.4.0)
     sinatra (2.0.0)
       mustermann (~> 1.0)
       rack (~> 2.0)
@@ -53,9 +55,10 @@ PLATFORMS
 DEPENDENCIES
   activerecord
   facebook-messenger
-  httparty
+  jsonb_accessor (~> 1.0.0)
   puma
   rake
+  require_all
   sinatra
   sinatra-activerecord
   sinatra-cross_origin (~> 0.3.1)

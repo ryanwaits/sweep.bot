@@ -1,47 +1,18 @@
 require 'json'
 require 'httparty'
+require './user.rb'
 
 class SweepApi
   include HTTParty
-  base_uri 'https://db76aae9.ngrok.io/api/v1'
+  # base_uri 'https://dcfe6d83.ngrok.io/api/v1'
 
   # def initialize(service, page)
   #   @options = { query: { site: service, page: page } }
   # end
 
-  # def get_or_create_user(id)
-  #   options = {
-  #     body: {
-  #       user: { 
-  #         first_name: 'Test',
-  #         last_name: 'User',
-  #         facebook_uuid: id
-  #       }
-  #     }
-  #   }
-  #   response = self.class.post('/users', options)
-  #   body = JSON.parse(response.body)
-  #   body['user']
-  # end
 
-  def get_current_picks
-    response = self.class.get("/users/1/picks")
-    body = JSON.parse(response.body)
-    body['current_picks']
-  end
-
-  def get_status
-    response = self.class.get("/users/1")
-    body = JSON.parse(response.body)
-    return {
-      current_streak: body['user']['history']['current_streak'],
-      current_picks: body['user']['current_picks']
-    }
-  end
-
-  def set_matchup_details id
-    response = self.class.get("/matchups/#{id}")
-    body = JSON.parse(response.body)
+  def find_or_create_user facebook_uuid
+    user = User.find_or_create_by_facebook_uuid(facebook_uuid)
   end
 
 end

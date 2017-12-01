@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'sinatra/activerecord'
 require 'sinatra/cross_origin'
 
 require "net/http"

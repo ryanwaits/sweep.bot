@@ -1,11 +1,14 @@
 default: &default
   adapter: postgresql
+  host: 'localhost'
   encoding: unicode
-  pool: 2
+  pool: 5
+  username: 'ryanwaits'
   
 development:
   <<: *default
-  database: unit_bot_development
+  database: sweep_development
 
-production:
+test:
   <<: *default
+  database: sweep_test
