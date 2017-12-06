@@ -3,12 +3,16 @@ require 'jsonb_accessor'
 class Pick < ActiveRecord::Base
   jsonb_accessor :data,
     result: :string,
-    complete: [:boolean, default: false]
+    locked: [:boolean, default: false],
+    complete: [:boolean, default: false],
+    notified: [:boolean, default: false]
 
   belongs_to :user
   belongs_to :team
   belongs_to :matchup
 
+  scope :completed, -> { data_where(complete: true) }
+  scope :recently_completed, -> { data_where(complete: true, notified: false) }
   scope :pending_results, -> { data_where(complete: false) }
   scope :wins, -> { data_where(result: 'W') }
   scope :losses, -> { data_where(result: 'L') }

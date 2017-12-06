@@ -10,3 +10,4 @@ gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'facebook-messenger'
 gem "jsonb_accessor", "~> 1.0.0"
+gem 'whenever', "~> 0.9.7", :require => false

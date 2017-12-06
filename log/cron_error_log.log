@@ -1,0 +1,95 @@
+rake aborted!
+Net::OpenTimeout: Net::OpenTimeout
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/httparty-0.15.6/lib/httparty/request.rb:142:in `perform'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/httparty-0.15.6/lib/httparty.rb:563:in `perform_request'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/httparty-0.15.6/lib/httparty.rb:505:in `post'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/facebook-messenger-1.0.0/lib/facebook/messenger/bot.rb:33:in `deliver'
+lib/tasks/nfl.rake:121:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+Facebook::Messenger::Profile::Error: (#-1) Unexpected internal error
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/facebook-messenger-1.0.0/lib/facebook/messenger/profile.rb:38:in `raise_errors'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/facebook-messenger-1.0.0/lib/facebook/messenger/profile.rb:22:in `set'
+/Users/ryanwaits/Code/apps/sweep/sweep.bot/bot.rb:18:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activesupport-5.1.4/lib/active_support/dependencies.rb:292:in `require'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activesupport-5.1.4/lib/active_support/dependencies.rb:292:in `block in require'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activesupport-5.1.4/lib/active_support/dependencies.rb:258:in `load_dependency'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activesupport-5.1.4/lib/active_support/dependencies.rb:292:in `require'
+/Users/ryanwaits/Code/apps/sweep/sweep.bot/Rakefile:4:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)
+rake aborted!
+NoMethodError: undefined method `team' for nil:NilClass
+lib/tasks/nfl.rake:95:in `block (3 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/activerecord-5.1.4/lib/active_record/relation/delegation.rb:39:in `each'
+lib/tasks/nfl.rake:78:in `block (2 levels) in <top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/gems/rake-12.3.0/exe/rake:27:in `<top (required)>'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `eval'
+/Users/ryanwaits/.rvm/gems/ruby-2.4.1/bin/ruby_executable_hooks:15:in `<main>'
+Tasks: TOP => nfl:send_notification
+(See full trace by running task with --trace)

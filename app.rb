@@ -3,6 +3,8 @@ require 'sinatra'
 require 'sinatra/activerecord'
 require 'sinatra/cross_origin'
 
+require './models/user'
+
 require "net/http"
 require "net/https"
 require "cgi"
@@ -12,6 +14,7 @@ require "json"
 enable :sessions
 
 configure do
+  set :environment, ENV["RACK_ENV"]
   enable :cross_origin
 end
 
@@ -38,14 +41,14 @@ get "/" do
     puts "Access Token is nil"
   else
     
-    fb_api = FacebookService.new(session[:oauth][:access_token])
-    fb_api.get_me(session[:oauth][:access_token])
+    # fb_api = FacebookService.new(session[:oauth][:access_token])
+    # fb_api.get_me(session[:oauth][:access_token])
 
-    session[:user_id] = @json['id']
-    request = Net::HTTP::Get.new "/#{session[:user_id]}/friends?access_token=#{session[:oauth][:access_token]}"
-    response = http.request request
-    @json = JSON.parse(response.body)
-    puts @json.inspect
+    # session[:user_id] = @json['id']
+    # request = Net::HTTP::Get.new "/#{session[:user_id]}/friends?access_token=#{session[:oauth][:access_token]}"
+    # response = http.request request
+    # @json = JSON.parse(response.body)
+    # puts @json.inspect
 
     # request = Net::HTTP::Get.new "/#{session[:user_id]}?fields=picture&access_token=#{session[:oauth][:access_token]}"
     # response = http.request request

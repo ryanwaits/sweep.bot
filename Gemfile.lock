@@ -13,6 +13,7 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
     arel (8.0.0)
+    chronic (0.10.2)
     concurrent-ruby (1.0.5)
     facebook-messenger (1.0.0)
       httparty (~> 0.13, >= 0.13.7)
@@ -48,6 +49,8 @@ GEM
     tilt (2.0.8)
     tzinfo (1.2.4)
       thread_safe (~> 0.1)
+    whenever (0.9.7)
+      chronic (>= 0.6.3)
 
 PLATFORMS
   ruby
@@ -62,6 +65,7 @@ DEPENDENCIES
   sinatra
   sinatra-activerecord
   sinatra-cross_origin (~> 0.3.1)
+  whenever (~> 0.9.7)
 
 RUBY VERSION
    ruby 2.4.1p111
