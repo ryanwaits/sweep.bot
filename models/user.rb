@@ -6,14 +6,12 @@ class User < ActiveRecord::Base
     mulligan_count: [:integer, default: 0]
 
   jsonb_accessor :notification_settings,
-    pregame_reminder: [:boolean, default: true],
-    pregame_props: [:boolean, default: false],
-    in_game_props: [:boolean, default: false],
-    postgame_recap_all: [:boolean, default: false],
-    postgame_recap_loss: [:boolean, default: true],
-    postgame_recap_win_two: [:boolean, default: true],
-    postgame_recap_win_three: [:boolean, default: true],
-    postgame_recap_sweep: [:boolean, default: true]
+    reminders: [:boolean, default: true],
+    props: [:boolean, default: false],
+    recap_all: [:boolean, default: false],
+    recap_loss: [:boolean, default: true],
+    recap_win_three: [:boolean, default: true],
+    recap_sweep: [:boolean, default: true]
 
   has_many :picks, -> { order(:order) }
 
