@@ -3,6 +3,7 @@ require 'sinatra/activerecord'
 
 require './lib/text_message'
 require './lib/attachment_message'
+require './lib/payload'
 
 require './models/matchup'
 require './models/matchup_detail'
@@ -35,8 +36,8 @@ Facebook::Messenger::Profile.set({
         },
         {
           type: 'postback',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           type: 'web_url',
@@ -49,23 +50,26 @@ Facebook::Messenger::Profile.set({
   ]
 }, access_token: ENV['ACCESS_TOKEN'])
 
-MAIN_MENU = [
-  {
-    content_type: 'text',
-    title: 'Select Picks',
-    payload: 'SELECT_PICKS'
-  },
-  {
-    content_type: 'text',
-    title: 'Current Status',
-    payload: 'STATUS'
+def media(options, menu=nil)
+  message_options = {
+    messaging_type: "RESPONSE",
+    recipient: { id: @user.facebook_uuid },
+    message: { 
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'open_graph',
+          elements: options
+        }
+      },
+      quick_replies: menu
+    }
   }
-  # {
-  #   content_type: 'text',
-  #   title: 'Friend Status',
-  #   payload: 'FRIEND_STATUS'
-  # }
-]
+
+  Bot.deliver(message_options, access_token: ENV['ACCESS_TOKEN'])
+
+  wait_for_user
+end
 
 def say(options, menu=nil)  
   message_options = {
@@ -131,81 +135,25 @@ def wait_for_user
     @user = User.find_or_create_by(facebook_uuid: postback.sender['id'])
 
     if postback.payload == 'GET_STARTED_PAYLOAD'
-      menu = [
-        {
-          content_type: 'text',
-          title: 'How To Play',
-          payload: 'HOW_TO_PLAY'
-        },
-        {
-          content_type: 'text',
-          title: 'Select Picks',
-          payload: 'SELECT_PICKS'
-        }
-      ]
       text = "Welcome to Sweep! 🎉\n\nEvery week, Sweep sends you a select list of games. Make your picks and enjoy the games with nothing but upside! 👌"
-      quick_reply(text, menu)
+      quick_reply(text, GET_STARTED)
     end
 
-    if postback.payload == 'PREFERENCES'
-      menu = [
-        {
-          content_type: 'text',
-          title: 'Reminders',
-          payload: 'REMINDERS'
-        },
-        {
-          content_type: 'text',
-          title: 'Props',
-          payload: 'PROPS'
-        },
-        {
-          content_type: 'text',
-          title: 'Game Recaps',
-          payload: 'GAME_RECAPS'
-        },
-        {
-          content_type: 'text',
-          title: 'Main Menu',
-          payload: 'MAIN_MENU'
-        }
-      ]
-      text = "We've got a few preferences you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
-      quick_reply(text, menu)
+    if postback.payload == 'Get Alerts'
+      text = "We have alerts you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
+      quick_reply(text, GET_ALERTS)
     end
 
   end
 
   Bot.on :message do |message|
     @user = User.find_or_create_by(facebook_uuid: message.sender['id'])
-    matchup_id = message.quick_reply.split('_')[1].to_i if message.quick_reply
-    set_matchup_details(@user.current_picks)
+    matchup_id = message.quick_reply.split('_')[1].to_i if message.quick_reply.include?("MATCHUP")
+    set_matchup_details(@user.upcoming_picks)
 
-    if message.quick_reply == 'PREFERENCES'
-      menu = [
-        {
-          content_type: 'text',
-          title: 'Reminders',
-          payload: 'REMINDERS'
-        },
-        {
-          content_type: 'text',
-          title: 'Props',
-          payload: 'PROPS'
-        },
-        {
-          content_type: 'text',
-          title: 'Game Recaps',
-          payload: 'GAME_RECAPS'
-        },
-        {
-          content_type: 'text',
-          title: 'Main Menu',
-          payload: 'MAIN_MENU'
-        }
-      ]
-      text = "We've got a few preferences you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
-      quick_reply(text, menu)
+    if message.quick_reply == 'Get Alerts'
+      text = "We have alerts you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
+      quick_reply(text, GET_ALERTS)
     end
 
     if message.text == 'Reminders'
@@ -219,8 +167,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -239,8 +187,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -257,8 +205,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -282,8 +230,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -301,8 +249,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -319,8 +267,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -357,8 +305,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Preferences',
-          payload: 'PREFERENCES'
+          title: 'Get Alerts',
+          payload: 'Get Alerts'
         },
         {
           content_type: 'text',
@@ -628,13 +576,27 @@ def wait_for_user
     end
 
     if message.text == 'Main Menu'
-      text = "Want to get back to seeing your selected picks, update picks, or see your current status? Tap below 👌"
+      text = "Tap below to check your current status, select your picks, or see what your friends are doing 👌"
       quick_reply(text, MAIN_MENU)
     end
 
     if message.quick_reply == "MATCHUP_#{matchup_id}_PAYLOAD"
-      pick = @user.current_picks.find_by_matchup_id(matchup_id)
-      text = pick.matchup.matchup_detail.details(pick)
+      pick = @user.upcoming_picks.find_by_matchup_id(matchup_id)
+      pick.field == 'home' ? home_num = Pick.currently_on(pick).count : away_num = Pick.currently_on(pick).count
+      hot_or_not = pick.matchup.details.hot_or_not_details(pick)
+      public_betting_details = pick.matchup.details.public_betting_details(pick)
+      
+      if pick.field == 'home'
+        players, grammar = home_num == 1 ? ["player", "is"] : ["players", "are"]
+        pick.matchup.details.update_attribute(:home_friend_details, "👀 #{home_num} other #{players} on Sweep #{grammar} on the #{pick.team.name.split(' ')[-1]}.")
+        friend_details = pick.matchup.details.friend_details(pick)
+      else
+        players, grammar = away_num == 1 ? ["player", "is"] : ["players", "are"]
+        pick.matchup.details.update_attribute(:away_friend_details, "👀 #{away_num} other #{players} on Sweep #{grammar} on the #{pick.team.name.split(' ')[-1]}.")
+        friend_details = pick.matchup.details.friend_details(pick)
+      end
+      
+      text = "#{hot_or_not}\n\n#{public_betting_details}\n\n#{friend_details}"
       quick_reply(text, @menu)
     end
 
@@ -723,50 +685,55 @@ def wait_for_user
     end
 
     if message.text == 'Current Status'
-      if @user.current_picks.length == 0
-        quick_reply("You don't have any picks yet! Get started below 👇", MAIN_MENU)
+      if @user.upcoming_picks.empty? && @user.picks_in_progress.empty? && @user.current_completed_picks.empty?
+        quick_reply("You have nothing in flight for the day! Get started below 👇", MAIN_MENU)
       else
         status_card = [
           {
             content_type: "text",
-            title: "🎢 History",
+            title: "Past History",
             payload: "HISTORY"
           },
           {
             content_type: 'text',
-            title: '👥 Friends Picks',
-            payload: 'FRIENDS_PICKS'
-          },
-          {
-            content_type: 'text',
-            title: 'Main Menu',
-            payload: 'MAIN_MENU'
+            title: 'Friends Status',
+            payload: 'FRIENDS_STATUS'
           }
         ]
-        @user.current_streak >= 1 ? emoji = "😃" : emoji = "😕"
-        @user.current_picks.first.spread > 0 ? symbol = "+" : symbol = ""
-        game_time = DateTime.new(
-          @user.current_picks.first.matchup.start_time_year, 
-          @user.current_picks.first.matchup.start_time_month, 
-          @user.current_picks.first.matchup.start_time_day, 
-          @user.current_picks.first.matchup.start_time_hour, 
-          @user.current_picks.first.matchup.start_time_minute, 
-          00
-        )
-        # time_until = ((game_time - DateTime.now) * 24 * 60).to_i
+        emoji = @user.current_streak >= 1 ? "🔥" : "😤"
+        wins = @user.current_streak == 1 ? "win" : "wins"
+        symbol = @user.upcoming_picks.first.spread > 0 ? "+" : ""
+        teams_in_progress = ""
+        current_completed_picks = ""
 
-        if @user.current_picks.first.matchup.started? && @user.current_picks.length >= 2
-          text = "You're currently at #{@user.current_streak} wins #{emoji}\n\nYou've got the #{@user.current_picks.first.team.name.split(' ')[-1]} (#{symbol}#{@user.current_picks.first.spread}) going at it now.\n\nYour next pick up is the #{@user.current_picks.second.team.name.split(' ')[-1]} (#{@user.current_picks.second.spread})."
-        elsif @user.current_picks.first.matchup.started? && @user.current_picks.length < 2
-          text = "You're currently at #{@user.current_streak} wins #{emoji}\n\nYou've got the #{@user.current_picks.first.team.name.split(' ')[-1]} (#{symbol}#{@user.current_picks.first.spread}) going at it now.\n\nYou don't have anything up next, but theres still some matchups that havent started yet!"
-        else
-          text = "You're currently at #{@user.current_streak} wins #{emoji}\n\nYou've got action on the #{@user.current_picks.first.team.name.split(' ')[-1]} (#{symbol}#{@user.current_picks.first.spread}) coming up next. They're up against the #{@user.current_picks.first.opponent.name.split(' ')[-1]}"
-        end        
-        quick_reply(text, status_card)
+        in_progress = @user.picks_in_progress.map(&:team).map(&:name).map { |team| team.split(' ')[-1]}
+
+        in_progress.each_with_index do |team, index|
+          teams_in_progress.concat(team) and break if in_progress.length == 1
+          teams_in_progress.concat("#{in_progress[0]} and #{in_progress[1]}") and break if in_progress.length == 2
+          teams_in_progress.concat("and #{team}") and break if index == in_progress.length - 1
+          teams_in_progress.concat("#{team}, ")
+        end
+
+        @user.current_completed_picks.map do |pick|
+          result_emoji = pick.result == "W" ? "✅" : "❌"
+          current_completed_picks.concat("#{result_emoji} #{pick.team.name.split(' ')[-1]} (#{pick.result})") and break if @user.current_completed_picks.length == @user.current_completed_picks.length - 1
+          current_completed_picks.concat("#{result_emoji} #{pick.team.name.split(' ')[-1]} (#{pick.result})\n\n")
+        end
+
+        streak_text = "#{emoji} You have #{@user.current_streak} #{wins} in a row\n\n"
+        progress_text = @user.picks_in_progress.any? ? "🚦 The #{teams_in_progress} are in progress now.\n\n" : "🚧 You have no games in progress.\n\n"
+        upcoming_text = @user.upcoming_picks.any? ? "👉 Next up is your #{@user.upcoming_picks.first.team.name.split(' ')[-1]} (#{symbol}#{@user.upcoming_picks.first.spread}) going up against the #{@user.upcoming_picks.first.opponent.name.split(' ')[-1]}.\n\n" : "🚧 You do not have any games coming up.\n\n"
+        results_text = @user.current_completed_picks.any? ? "👇 Your results so far today\n\n#{current_completed_picks}" : ""
+        call_to_action = "Tap your teams below to get more details 👇"
+
+        text = "#{streak_text}#{progress_text}#{upcoming_text}#{results_text}#{call_to_action}"
+
+        quick_reply(text, status_card.concat(@menu))
       end                           
     end
 
-    if message.text == '🎢 History'
+    if message.text == 'Past History'
       menu = [
         {
           content_type: 'text',
@@ -775,8 +742,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: '👥 Friends Picks',
-          payload: 'FRIENDS_PICKS'
+          title: 'Friends Status',
+          payload: 'FRIENDS_STATUS'
         },
         {
           content_type: 'text',
@@ -788,22 +755,49 @@ def wait_for_user
         text = "Here's what you've got so far...\n\nSweep Count: #{@user.sweep_count}\n\nOverall Record: #{@user.picks.wins.count}-#{@user.picks.losses.count}"
         quick_reply(text, menu)
       else
-        text = "Welp, it doesn't look like we have a history yet 🤷\n\nFeel free to check back here once you've played a bit more.\n\nWe promise we'll have some fun stats for ya 😉"
+        text = "It doesn't look like we have a history yet 🤷\n\nCheck back here once you've played a bit more and we'll have some stats for you 😉"
         quick_reply(text, menu)
       end
     end
 
-    if message.text == '👥 Friends Picks'
+    # if message.text == 'Video'
+    #   menu = [
+    #     {
+    #       content_type: 'text',
+    #       title: 'Current Status',
+    #       payload: 'STATUS'
+    #     },
+    #     {
+    #       content_type: "text",
+    #       title: "Past History",
+    #       payload: "HISTORY"
+    #     },
+    #     {
+    #       content_type: 'text',
+    #       title: 'Main Menu',
+    #       payload: 'MAIN_MENU'
+    #     },
+    #     {
+    #       content_type: 'text',
+    #       title: 'Video',
+    #       payload: 'VIDEO'
+    #     }
+    #   ]
+
+    #   options = [
+    #     {
+    #        url: "https://vimeo.com/246558223"
+    #     }
+    #   ]
+    #   media(options, menu)
+    # end
+
+    if message.text == 'Friends Status'
       menu = [
         {
           content_type: 'text',
           title: 'Current Status',
           payload: 'STATUS'
-        },
-        {
-          content_type: "text",
-          title: "🎢 History",
-          payload: "HISTORY"
         },
         {
           content_type: 'text',

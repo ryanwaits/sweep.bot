@@ -22,7 +22,15 @@ class User < ActiveRecord::Base
     picks.completed
   end
 
-  def current_picks
+  def current_completed_picks
+    picks.current_completed_picks
+  end
+
+  def picks_in_progress
+    picks.in_progress
+  end
+
+  def upcoming_picks
     picks.pending_results
   end
 

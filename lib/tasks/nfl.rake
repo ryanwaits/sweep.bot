@@ -25,7 +25,7 @@ task :reminder do
   # Add more details with matchup information
   # matchups = Matchup.pending
   users.each do |user|
-    if user.current_picks.length == 0
+    if user.upcoming_picks.length == 0
       puts "Remind users to make picks..."
       text = "It doesn't look like you've made any of your picks for this week... 😕\n\nBut it's ok, you've still got time! ⏳\n\nGet started below 👇\n\n"
       message_options = {
