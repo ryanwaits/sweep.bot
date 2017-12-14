@@ -11,6 +11,6 @@ development:
 
 production:
   <<: *default
-  url: <%= ENV["API_DATABASE_URL"] %>
+  url: <%= ENV["DATABASE_URL"] %>
   encoding: utf8
   pool: 15
