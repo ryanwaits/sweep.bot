@@ -8,7 +8,7 @@ require './models/user'
 require "net/http"
 require "net/https"
 require "cgi"
-require 'activerecord'
+require 'sinatra-activerecord'
 
 require "json"
 
