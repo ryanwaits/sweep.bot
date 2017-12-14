@@ -8,12 +8,3 @@ default: &default
 development:
   <<: *default
   database: sweep_development
-
-test:
-  <<: *default
-  database: sweep_test
-
-production:
-  <<: *default
-  host: ENV["HEROKU_POSTGRESQL_TEAL_URL"]
-  database: sweep_production
