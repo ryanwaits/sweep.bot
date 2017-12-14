@@ -12,3 +12,8 @@ development:
 test:
   <<: *default
   database: sweep_test
+
+production:
+  <<: *default
+  host: ENV["DATABASE_URL"]
+  database: sweep_production

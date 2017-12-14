@@ -79,7 +79,7 @@ desc "Send Notifications"
             messaging_type: "UPDATE",
             recipient: { id: pick.user.facebook_uuid },
             message: {
-              text: text: "#{text}\n\n#{emoji} #{win_three}", 
+              text: "#{text}\n\n#{emoji} #{win_three}", 
               quick_replies: menu
             }
           }
@@ -109,6 +109,7 @@ desc "Send Notifications"
         if pick.user.recap_loss
           symbol = pick.spread > 0 ? "+" : ""
           emoji = "❄️"
+          # recap = GameRecap.find_by(pick_id: pick.id)
           message_options = {
             messaging_type: "UPDATE",
             recipient: { id: pick.user.facebook_uuid },
