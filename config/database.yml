@@ -15,5 +15,5 @@ test:
 
 production:
   <<: *default
-  host: ENV["DATABASE_URL"]
+  host: ENV["HEROKU_POSTGRESQL_TEAL_URL"]
   database: sweep_production

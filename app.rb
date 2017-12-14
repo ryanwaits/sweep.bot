@@ -8,8 +8,11 @@ require './models/user'
 require "net/http"
 require "net/https"
 require "cgi"
+require 'activerecord'
 
 require "json"
+
+ActiveRecord::Base.establish_connection(ENV['HEROKU_POSTGRESQL_TEAL_URL'] || 'postgres://localhost/sweep_development')
 
 enable :sessions
 
