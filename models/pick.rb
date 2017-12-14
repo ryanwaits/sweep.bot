@@ -33,4 +33,8 @@ class Pick < ActiveRecord::Base
   def spread
     team.id == matchup.home_team.id ? matchup.point_spread_home : matchup.point_spread_away
   end
+
+  def abbrev
+    team.name.split(' ')[-1]
+  end
 end

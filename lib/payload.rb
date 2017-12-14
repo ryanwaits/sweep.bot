@@ -26,6 +26,11 @@ GET_STARTED = [
     content_type: 'text',
     title: 'Select Picks',
     payload: 'SELECT_PICKS'
+  },
+  {
+    content_type: 'text',
+    title: 'Update Settings',
+    payload: 'UPDATE_SETTINGS'
   }
 ]
 

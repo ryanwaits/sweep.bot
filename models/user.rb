@@ -6,15 +6,20 @@ class User < ActiveRecord::Base
     mulligan_count: [:integer, default: 0]
 
   jsonb_accessor :notification_settings,
-    reminders: [:boolean, default: true],
+    reminders: [:boolean, default: false],
     props: [:boolean, default: false],
     recap_all: [:boolean, default: false],
     recap_loss: [:boolean, default: true],
-    recap_win_three: [:boolean, default: true],
+    recap_win_three: [:boolean, default: false],
     recap_sweep: [:boolean, default: true]
 
   has_many :picks, -> { order(:order) }
 
+  scope :with_reminders, -> { notification_settings_where(reminders: true) }
+  scope :with_recap_all, -> { notification_settings_where(recap_all: true) }
+  scope :with_recap_loss, -> { notification_settings_where(recap_loss: true) }
+  scope :with_recap_win_three, -> { notification_settings_where(recap_win_three: true) }
+  scope :with_recap_sweep, -> { notification_settings_where(recap_sweep: true) }
   scope :most_streaks, -> { order(streak_count: :desc) }
   scope :streak_of, ->(number) { where(current_streak: number) }
 

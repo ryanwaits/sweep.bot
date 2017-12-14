@@ -1,3 +1,6 @@
+require 'net/http'
+require 'json'
+
 require 'facebook/messenger'
 require 'sinatra/activerecord'
 
@@ -16,39 +19,9 @@ include Facebook::Messenger
 
 Facebook::Messenger::Subscriptions.subscribe(access_token: ENV["ACCESS_TOKEN"])
 
-Facebook::Messenger::Profile.set({
-  get_started: {
-    payload: 'GET_STARTED_PAYLOAD'
-  }
-}, access_token: ENV['ACCESS_TOKEN'])
-
-Facebook::Messenger::Profile.set({
-  persistent_menu: [
-    {
-      locale: 'default',
-      composer_input_disabled: true,
-      call_to_actions: [
-        {
-          type: 'web_url',
-          title: 'Leaderboard',
-          url: 'http://www.playsweep.com/',
-          webview_height_ratio: 'tall'
-        },
-        {
-          type: 'postback',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
-        },
-        {
-          type: 'web_url',
-          title: 'How To Play',
-          url: 'http://www.playsweep.com/',
-          webview_height_ratio: 'tall'
-        }
-      ]
-    }
-  ]
-}, access_token: ENV['ACCESS_TOKEN'])
+def percentage_of(pick, matchup_id)
+  (Pick.currently_on(pick).count.to_f / Pick.where(matchup_id: matchup_id).count.to_f * 100).round(0)
+end
 
 def media(options, menu=nil)
   message_options = {
@@ -109,10 +82,6 @@ def start
   wait_for_user
 end
 
-def text_reply recipient_id, message, menu
-  TextMessage.new(recipient_id, message, menu).format
-end
-
 def set_matchup_details(picks)
   @menu = []
   picks.each do |current_pick|
@@ -129,29 +98,88 @@ def set_matchup_details(picks)
   @menu
 end
 
+def get_user_info(user)
+  url = "https://graph.facebook.com/v2.6/#{user.facebook_uuid}?fields=first_name,last_name&access_token=#{ENV['ACCESS_TOKEN']}"
+  uri = URI(url)
+  res = Net::HTTP.get_response(uri)
+  response = JSON.parse(res.body)
+  user.update_attributes(first_name: response['first_name'], last_name: response['last_name'])
+  response
+end
+
 def wait_for_user
 
   Bot.on :postback do |postback|
     @user = User.find_or_create_by(facebook_uuid: postback.sender['id'])
 
     if postback.payload == 'GET_STARTED_PAYLOAD'
-      text = "Welcome to Sweep! 🎉\n\nEvery week, Sweep sends you a select list of games. Make your picks and enjoy the games with nothing but upside! 👌"
+      Facebook::Messenger::Profile.set({
+        get_started: {
+          payload: 'GET_STARTED_PAYLOAD'
+        }
+      }, access_token: ENV['ACCESS_TOKEN'])
+
+      Facebook::Messenger::Profile.set({
+        greeting: [
+          {
+            locale: "default",
+            text: "Hey {{user_first_name}}, we're Sweep 👋\n\nPick from a list of games at zero risk for your chance at a daily $50 gift card from Amazon.\n\nCome check us out!"
+          }
+        ]
+      }, access_token: ENV['ACCESS_TOKEN'])
+
+      Facebook::Messenger::Profile.set({
+        persistent_menu: [
+          {
+            locale: 'default',
+            composer_input_disabled: true,
+            call_to_actions: [
+              {
+                type: 'web_url',
+                title: 'Leaderboard',
+                url: 'http://www.playsweep.com/',
+                webview_height_ratio: 'tall'
+              },
+              {
+                type: 'postback',
+                title: 'Update Settings',
+                payload: 'UPDATE_SETTINGS'
+              },
+              {
+                type: 'web_url',
+                title: 'How To Play',
+                url: 'http://www.playsweep.com/',
+                webview_height_ratio: 'tall'
+              }
+            ]
+          }
+        ]
+      }, access_token: ENV['ACCESS_TOKEN'])
+      get_user_info(@user) if @user.first_name.nil? || @user.last_name.nil?
+      text = "Welcome #{@user.first_name}!\n\nWe are a completely free, zero-risk sports picking bot that gives you a daily chance at a $50 Amazon gift card when you successfully pick 4 wins in a row 🤑\n\nTap on the options below to get started 🏈 🏀"
       quick_reply(text, GET_STARTED)
+      sleep 2
     end
 
-    if postback.payload == 'Get Alerts'
+    if postback.payload == 'UPDATE_SETTINGS'
       text = "We have alerts you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
       quick_reply(text, GET_ALERTS)
     end
 
   end
 
+  Bot.on :delivery do |message|
+  end
+
+  Bot.on :read do |message|
+  end
+
   Bot.on :message do |message|
     @user = User.find_or_create_by(facebook_uuid: message.sender['id'])
-    matchup_id = message.quick_reply.split('_')[1].to_i if message.quick_reply.include?("MATCHUP")
+    matchup_id = message.quick_reply.split('_')[1].to_i if message.quick_reply
     set_matchup_details(@user.upcoming_picks)
 
-    if message.quick_reply == 'Get Alerts'
+    if message.quick_reply == 'UPDATE_SETTINGS'
       text = "We have alerts you can manage if you want more or less from us during the day.\n\nTap the options below to get started! 👇"
       quick_reply(text, GET_ALERTS)
     end
@@ -167,8 +195,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -187,8 +215,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -205,8 +233,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -230,8 +258,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -249,8 +277,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -267,8 +295,8 @@ def wait_for_user
       menu = [
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -305,8 +333,8 @@ def wait_for_user
         },
         {
           content_type: 'text',
-          title: 'Get Alerts',
-          payload: 'Get Alerts'
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         },
         {
           content_type: 'text',
@@ -314,7 +342,7 @@ def wait_for_user
           payload: 'MAIN_MENU'
         }
       ]
-      text = "When you would like to be notified about your results? 🤔"
+      text = "When would you like to be notified about your results? 🤔"
       quick_reply(text, menu)
     end
 
@@ -547,7 +575,7 @@ def wait_for_user
     end
 
     if message.text == 'How To Play'
-      text = "✅ Each week, we offer 4-5 select matchups.\n\n✅ You can select em' all, or you can skip em' all, whatever you want.\n\n✅ Your job is to maintain consecutive wins.\n\n✅ Hitting 4 in a row is considered a Sweep.\n\nTo learn more about how the prizes work, tap below 👇"
+      text = "✅ You will have at least one game to choose from each day.\n\n✅ You can select as many or as few games as you want, completely free.\n\n✅ Getting 4 wins in a row is considered a Sweep.\n\nTo learn more about how the prizes work, tap below 👇"
       menu = [
         {
           content_type: 'text',
@@ -564,35 +592,39 @@ def wait_for_user
     end
 
     if message.text == 'What About Prizes?'
-      text = "Each game day, we offer a $50 prize pool in the form of an Amazon gift card.\n\n✅ If you are the only one to hit a Sweep for the day, you take home the entire prize pool.\n\n✅ If there are many Sweep's on a given day, you share the prize pool with other winners.\n\n✅ If no one hits a Sweep for the day, the prize pool will rollover (i.e, $50 jumps to $100 for the next day)\n\nNow get started by tapping below! 😁"
+      text = "We offer a $50 (Amazon) prize pool every day a game is played.\n\n✅ Take home the entire prize pool if you are the only one to hit a Sweep.\n\n✅ Share the prize pool with others if there are more winners.\n\n✅ The prize pool will rollover if no one hits a Sweep.\n\nNow get started by tapping below! 😁"
       menu = [
         {
           content_type: 'text',
           title: 'Select Picks',
           payload: 'SELECT_PICKS'
+        },
+        {
+          content_type: 'text',
+          title: 'Update Settings',
+          payload: 'UPDATE_SETTINGS'
         }
       ]
       quick_reply(text, menu)
     end
 
     if message.text == 'Main Menu'
-      text = "Tap below to check your current status, select your picks, or see what your friends are doing 👌"
+      text = "Tap below to check your current status, select picks, or see what your friends are doing 👌"
       quick_reply(text, MAIN_MENU)
     end
 
     if message.quick_reply == "MATCHUP_#{matchup_id}_PAYLOAD"
-      pick = @user.upcoming_picks.find_by_matchup_id(matchup_id)
-      pick.field == 'home' ? home_num = Pick.currently_on(pick).count : away_num = Pick.currently_on(pick).count
+      pick = @user.upcoming_picks.find_by_matchup_id(matchup_id) if @user.upcoming_picks.find_by_matchup_id(matchup_id).present?
+      pick = @user.picks_in_progress.find_by_matchup_id(matchup_id) if @user.picks_in_progress.find_by_matchup_id(matchup_id).present?
+      pick = @user.current_completed_picks.find_by_matchup_id(matchup_id) if @user.current_completed_picks.find_by_matchup_id(matchup_id).present?
       hot_or_not = pick.matchup.details.hot_or_not_details(pick)
       public_betting_details = pick.matchup.details.public_betting_details(pick)
       
       if pick.field == 'home'
-        players, grammar = home_num == 1 ? ["player", "is"] : ["players", "are"]
-        pick.matchup.details.update_attribute(:home_friend_details, "👀 #{home_num} other #{players} on Sweep #{grammar} on the #{pick.team.name.split(' ')[-1]}.")
+        pick.matchup.details.update_attribute(:home_friend_details, "👀 #{percentage_of(pick, pick.matchup_id)}% of players on Sweep are on the #{pick.team.name.split(' ')[-1]}.")
         friend_details = pick.matchup.details.friend_details(pick)
       else
-        players, grammar = away_num == 1 ? ["player", "is"] : ["players", "are"]
-        pick.matchup.details.update_attribute(:away_friend_details, "👀 #{away_num} other #{players} on Sweep #{grammar} on the #{pick.team.name.split(' ')[-1]}.")
+        pick.matchup.details.update_attribute(:away_friend_details, "👀 #{percentage_of(pick, pick.matchup_id)}% of players on Sweep are on the #{pick.team.name.split(' ')[-1]}.")
         friend_details = pick.matchup.details.friend_details(pick)
       end
       
@@ -686,9 +718,31 @@ def wait_for_user
 
     if message.text == 'Current Status'
       if @user.upcoming_picks.empty? && @user.picks_in_progress.empty? && @user.current_completed_picks.empty?
-        quick_reply("You have nothing in flight for the day! Get started below 👇", MAIN_MENU)
+        menu = [
+          {
+            content_type: 'text',
+            title: 'Select Picks',
+            payload: 'SELECT_PICKS'
+          },
+          {
+            content_type: 'text',
+            title: 'Friends Status',
+            payload: 'FRIENDS_STATUS'
+          },
+          {
+            content_type: 'text',
+            title: 'Main Menu',
+            payload: 'MAIN_MENU'
+          }
+        ]
+        quick_reply("You have nothing in flight for the day! Get started below 👇", menu)
       else
         status_card = [
+          {
+            content_type: "text",
+            title: "Current Status",
+            payload: "CURRENT_STATUS"
+          },
           {
             content_type: "text",
             title: "Past History",
@@ -702,7 +756,7 @@ def wait_for_user
         ]
         emoji = @user.current_streak >= 1 ? "🔥" : "😤"
         wins = @user.current_streak == 1 ? "win" : "wins"
-        symbol = @user.upcoming_picks.first.spread > 0 ? "+" : ""
+        symbol = @user.upcoming_picks.first.spread > 0 ? "+" : "" if @user.upcoming_picks.present?
         teams_in_progress = ""
         current_completed_picks = ""
 
